@@ -1,0 +1,47 @@
+@page "/frauds"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@using AuditForm.Model
+@using AuditForm.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<AuditForm.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Index</PageTitle>
+
+<h1>Fraud History</h1>
+
+<p>
+    <a href="frauds/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Fraud">
+    @* <PropertyColumn Property="fraud => fraud.Category" Title="Category" />
+    <PropertyColumn Property="fraud => fraud.FraudType" Title="Type" /> *@
+    <PropertyColumn Property="fraud => fraud.PreviousNumber" Title="Prev. No." />
+    <PropertyColumn Property="fraud => fraud.PreviousAmount" Title="Prev. Amt" />
+    <PropertyColumn Property="fraud => fraud.CurrentNumber" Title="Curr. No." />
+    <PropertyColumn Property="fraud => fraud.CurrentAmount" Title="Curr. Amt" />
+    <PropertyColumn Property="fraud => fraud.RecoveredNumber" Title="Rec. No." />
+    <PropertyColumn Property="fraud => fraud.RecoveredAmount" Title="Rec. Amt" />
+    <PropertyColumn Property="fraud => fraud.OutstandingNumber" Title="Out. No." />
+    <PropertyColumn Property="fraud => fraud.OutstandingAmount" Title="Out. Amt" />
+
+    <TemplateColumn Context="fraud">
+        <a href="@($"frauds/edit?id={fraud.Id}")">Edit</a> |
+        <a href="@($"frauds/details?id={fraud.Id}")">Details</a> |
+        <a href="@($"frauds/delete?id={fraud.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+
+@code {
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

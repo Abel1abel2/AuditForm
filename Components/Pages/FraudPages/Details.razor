@@ -1,0 +1,64 @@
+@page "/frauds/details"
+@using Microsoft.EntityFrameworkCore
+@using AuditForm.Model
+@inject IDbContextFactory<AuditForm.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Fraud</h2>
+    <hr />
+    @if (fraud is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Category</dt>
+            <dd class="col-sm-10">@fraud.Category</dd>
+            <dt class="col-sm-2">FraudType</dt>
+            <dd class="col-sm-10">@fraud.FraudType</dd>
+            <dt class="col-sm-2">PreviousNumber</dt>
+            <dd class="col-sm-10">@fraud.PreviousNumber</dd>
+            <dt class="col-sm-2">PreviousAmount</dt>
+            <dd class="col-sm-10">@fraud.PreviousAmount</dd>
+            <dt class="col-sm-2">CurrentNumber</dt>
+            <dd class="col-sm-10">@fraud.CurrentNumber</dd>
+            <dt class="col-sm-2">CurrentAmount</dt>
+            <dd class="col-sm-10">@fraud.CurrentAmount</dd>
+            <dt class="col-sm-2">RecoveredNumber</dt>
+            <dd class="col-sm-10">@fraud.RecoveredNumber</dd>
+            <dt class="col-sm-2">RecoveredAmount</dt>
+            <dd class="col-sm-10">@fraud.RecoveredAmount</dd>
+            <dt class="col-sm-2">OutstandingNumber</dt>
+            <dd class="col-sm-10">@fraud.OutstandingNumber</dd>
+            <dt class="col-sm-2">OutstandingAmount</dt>
+            <dd class="col-sm-10">@fraud.OutstandingAmount</dd>
+        </dl>
+        <div>
+            <a href="@($"/frauds/edit?id={fraud.Id}")">Edit</a> |
+            <a href="@($"/frauds")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Fraud? fraud;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        fraud = await context.Fraud.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (fraud is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+}

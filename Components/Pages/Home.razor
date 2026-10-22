@@ -1,0 +1,48 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+
+<PageTitle>Home</PageTitle>
+
+<div class="container mt-4">
+    <h1>Welcome</h1>
+    <hr />
+
+    <div class="row">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm" @onclick="NavigateToFrauds" style="cursor: pointer;">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-primary">
+                      Fraud Summary
+                    </h5>
+                    <p class="card-text text-muted small">
+                        View, create, and track outstanding fraud cases and calculations.
+                    </p>
+                    <span class="text-primary small fw-semibold">Go to list &rarr;</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm"  style="cursor: pointer;">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-primary">
+                      new Summary
+                    </h5>
+                    <p class="card-text text-muted small">
+                      you can add other report sections here and create,view and track.
+                    </p>
+                    <span class="text-primary small fw-semibold">Go to list &rarr;</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private void NavigateToFrauds()
+    {
+        NavigationManager.NavigateTo("/frauds");
+    }
+}

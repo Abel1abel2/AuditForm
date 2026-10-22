@@ -1,0 +1,91 @@
+@page "/frauds/delete"
+@using Microsoft.EntityFrameworkCore
+@using AuditForm.Model
+@inject IDbContextFactory<AuditForm.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete this?</p>
+<div>
+    <h2>Fraud</h2>
+    <hr />
+    @if (fraud is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Category</dt>
+            <dd class="col-sm-10">@fraud.Category</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">FraudType</dt>
+            <dd class="col-sm-10">@fraud.FraudType</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">PreviousNumber</dt>
+            <dd class="col-sm-10">@fraud.PreviousNumber</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">PreviousAmount</dt>
+            <dd class="col-sm-10">@fraud.PreviousAmount</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">CurrentNumber</dt>
+            <dd class="col-sm-10">@fraud.CurrentNumber</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">CurrentAmount</dt>
+            <dd class="col-sm-10">@fraud.CurrentAmount</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">RecoveredNumber</dt>
+            <dd class="col-sm-10">@fraud.RecoveredNumber</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">RecoveredAmount</dt>
+            <dd class="col-sm-10">@fraud.RecoveredAmount</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">OutstandingNumber</dt>
+            <dd class="col-sm-10">@fraud.OutstandingNumber</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">OutstandingAmount</dt>
+            <dd class="col-sm-10">@fraud.OutstandingAmount</dd>
+        </dl>
+        <EditForm method="post" Model="fraud" OnValidSubmit="DeleteFraud" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(fraud is null)">Delete</button> |
+            <a href="/frauds">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private Fraud? fraud;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        fraud = await context.Fraud.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (fraud is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+
+    private async Task DeleteFraud()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Fraud.Remove(fraud!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/frauds");
+    }
+}

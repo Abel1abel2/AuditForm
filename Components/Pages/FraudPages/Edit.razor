@@ -1,0 +1,136 @@
+@page "/frauds/edit"
+@using Microsoft.EntityFrameworkCore
+@using AuditForm.Model
+@inject IDbContextFactory<AuditForm.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Fraud</h2>
+<hr />
+@if (Fraud is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Fraud" OnValidSubmit="UpdateFraud" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Fraud.Id" value="@Fraud.Id" />
+                <div class="mb-3">
+                <span class="text-danger">*</span>
+                    <label for="category" class="form-label">Category:</label>
+                    <InputText id="category" @bind-Value="Fraud.Category" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Fraud.Category" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                <span class="text-danger">*</span>
+                    <label for="fraudtype" class="form-label">FraudType:</label>
+                    <InputText id="fraudtype" @bind-Value="Fraud.FraudType" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Fraud.FraudType" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="previousnumber" class="form-label">PreviousNumber:</label>
+                    <InputNumber id="previousnumber" @bind-Value="Fraud.PreviousNumber" class="form-control" />
+                    <ValidationMessage For="() => Fraud.PreviousNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="previousamount" class="form-label">PreviousAmount:</label>
+                    <InputNumber id="previousamount" @bind-Value="Fraud.PreviousAmount" class="form-control" />
+                    <ValidationMessage For="() => Fraud.PreviousAmount" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="currentnumber" class="form-label">CurrentNumber:</label>
+                    <InputNumber id="currentnumber" @bind-Value="Fraud.CurrentNumber" class="form-control" />
+                    <ValidationMessage For="() => Fraud.CurrentNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="currentamount" class="form-label">CurrentAmount:</label>
+                    <InputNumber id="currentamount" @bind-Value="Fraud.CurrentAmount" class="form-control" />
+                    <ValidationMessage For="() => Fraud.CurrentAmount" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="recoverednumber" class="form-label">RecoveredNumber:</label>
+                    <InputNumber id="recoverednumber" @bind-Value="Fraud.RecoveredNumber" class="form-control" />
+                    <ValidationMessage For="() => Fraud.RecoveredNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="recoveredamount" class="form-label">RecoveredAmount:</label>
+                    <InputNumber id="recoveredamount" @bind-Value="Fraud.RecoveredAmount" class="form-control" />
+                    <ValidationMessage For="() => Fraud.RecoveredAmount" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="outstandingnumber" class="form-label">OutstandingNumber:</label>
+                    <InputNumber id="outstandingnumber" @bind-Value="Fraud.OutstandingNumber" class="form-control" />
+                    <ValidationMessage For="() => Fraud.OutstandingNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="outstandingamount" class="form-label">OutstandingAmount:</label>
+                    <InputNumber id="outstandingamount" @bind-Value="Fraud.OutstandingAmount" class="form-control" />
+                    <ValidationMessage For="() => Fraud.OutstandingAmount" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/frauds">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Fraud? Fraud { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Fraud ??= await context.Fraud.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Fraud is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateFraud()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Fraud!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!FraudExists(Fraud!.Id))
+            {
+                NavigationManager.NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/frauds");
+    }
+
+    private bool FraudExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Fraud.Any(e => e.Id == id);
+    }
+}
