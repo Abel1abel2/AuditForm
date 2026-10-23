@@ -1,48 +1,103 @@
 ﻿@page "/"
+@using BlazorBootstrap
 @inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
-<div class="container mt-4">
-    <h1>Welcome</h1>
-    <hr />
+<div class="container py-5">
+   
+    <div class="mb-5">
+        <h1 class="fw-bold text-dark">Welcome</h1>
+        <p class="text-muted">Select a module below to view and manage records.</p>
+    </div>
 
-    <div class="row">
-
-        <div class="col-md-4">
-            <div class="card shadow-sm" @onclick="NavigateToFrauds" style="cursor: pointer;">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold text-primary">
-                      Fraud Summary
-                    </h5>
-                    <p class="card-text text-muted small">
-                        View, create, and track outstanding fraud cases and calculations.
+    <div class="row g-4">
+        
+        <!-- Card 1: Fraud Summary -->
+        <div class="col-md-6 col-lg-4">
+            <Card Class="h-100 shadow-sm border-0 action-card" 
+                  Style="cursor: pointer;" 
+                  @onclick="NavigateToFrauds">
+                <CardBody>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="bg-primary-subtle text-primary rounded-3 p-3">
+                         
+                          <Icon Name="IconName.Activity" />
+                        </div>
+                      <i class="bi bi-arrow-up-right-circle text-muted fs-5 transition-icon"></i>
+                    </div>
+                    
+                    <h5 class="card-title fw-bold mb-2">Fraud Summary</h5>
+                    <p class="card-text text-muted small mb-0">
+                        View, create, and track outstanding fraud cases, calculations, and recovery metrics.
                     </p>
-                    <span class="text-primary small fw-semibold">Go to list &rarr;</span>
-                </div>
-            </div>
+                </CardBody>
+            </Card>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm"  style="cursor: pointer;">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold text-primary">
-                      new Summary
-                    </h5>
-                    <p class="card-text text-muted small">
-                      you can add other report sections here and create,view and track.
+        <!-- Card 2: New Summary (Placeholder) -->
+        <div class="col-md-6 col-lg-4">
+            <Card Class="h-100 shadow-sm border-0 action-card" 
+                  Style="cursor: pointer;">
+                <CardBody>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="bg-info-subtle text-info rounded-3 p-3">
+                            <i class="bi bi-file-earmark-bar-graph fs-3"></i>
+                        </div>
+                        <i class="bi bi-arrow-up-right-circle text-muted fs-5 transition-icon"></i>
+                    </div>
+                    
+                    <h5 class="card-title fw-bold mb-2">New Summary</h5>
+                    <p class="card-text text-muted small mb-0">
+                        Add other report sections here to create, view, and track additional financial metrics.
                     </p>
-                    <span class="text-primary small fw-semibold">Go to list &rarr;</span>
-                </div>
-            </div>
+                </CardBody>
+            </Card>
         </div>
 
     </div>
 </div>
 
+<style>
+    /* Smooth hover effect for the cards */
+    .action-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+
+    /* Animate the top-right arrow icon on hover */
+    .action-card .transition-icon {
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .action-card:hover .transition-icon {
+        color: var(--bs-primary) !important;
+        transform: translate(3px, -3px);
+    }
+</style>
+
 @code {
-    private void NavigateToFrauds()
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private async Task NavigateToFrauds()
     {
-        NavigationManager.NavigateTo("/frauds");
+        if (AuthStateTask != null)
+        {
+            var authState = await AuthStateTask;
+            var user = authState.User;
+
+            if (user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                NavigationManager.NavigateTo("/frauds");
+                return;
+            }
+        }
+
+        NavigationManager.NavigateTo("Account/Login", forceLoad: true); 
     }
 }

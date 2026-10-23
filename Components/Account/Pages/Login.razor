@@ -124,11 +124,14 @@
             result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         }
 
-        if (result.Succeeded)
-        {
-            Logger.LogInformation("User logged in.");
-            RedirectManager.RedirectTo(ReturnUrl);
-        }
+       if (result.Succeeded)
+{
+    Logger.LogInformation("User logged in.");
+    // If ReturnUrl is blank or just "/Account/Login", send them straight home
+    var targetUrl = string.IsNullOrEmpty(ReturnUrl) || ReturnUrl.Contains("Account/") ? "/" : ReturnUrl;
+    RedirectManager.RedirectTo(targetUrl);
+}
+
         else if (result.RequiresTwoFactor)
         {
             RedirectManager.RedirectTo(

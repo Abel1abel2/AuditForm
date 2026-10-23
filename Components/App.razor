@@ -6,9 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <ResourcePreloader />
+
+    <!-- Bootstrap base CSS -->
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    
+    <!-- Blazor Bootstrap CSS (key for Card styles) -->
+    <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <!-- Project custom styles -->
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["AuditForm.styles.css"]" />
+    
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="PageRenderMode" />
@@ -17,8 +25,12 @@
 <body>
     <Routes @rendermode="PageRenderMode" />
     <ReconnectModal />
+    
     <script src="@Assets["_framework/blazor.web.js"]"></script>
     <script src="@Assets["Components/Account/Shared/PasskeySubmit.razor.js"]" type="module"></script>
+   
+    <!-- Blazor Bootstrap JS -->
+    <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
 </body>
 
 </html>

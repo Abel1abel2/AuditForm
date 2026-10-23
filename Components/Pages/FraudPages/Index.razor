@@ -1,47 +1,299 @@
 @page "/frauds"
-@using Microsoft.AspNetCore.Components.QuickGrid
+@attribute [Authorize]
 @using Microsoft.EntityFrameworkCore
 @using AuditForm.Model
 @using AuditForm.Data
+@using BlazorBootstrap
 @implements IAsyncDisposable
 @inject IDbContextFactory<AuditForm.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ToastService ToastService
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Fraud History</PageTitle>
 
-<h1>Fraud History</h1>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold text-dark mb-1">Fraud History</h1>
+            <p class="text-muted mb-0 small">
+                Total cases: <span class="fw-semibold text-dark">@(fraudList?.Count ?? 0)</span>
+            </p>
+        </div>
+        <a href="frauds/create" class="btn btn-primary px-4 shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i>Create New Case
+        </a>
+    </div>
 
-<p>
-    <a href="frauds/create">Create New</a>
-</p>
+    <!-- Summary Cards using Blazor Bootstrap Card -->
+    @if (fraudList != null && fraudList.Any())
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+            <Card Style="border: none; border-left: 3px solid #5a8dfb; border-bottom: 10px solid #5a8dfb;" 
+      Class="shadow-lg h-100">
+                    <CardBody>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Previous </div>
+                                <div class="fs-3 fw-bold text-dark">
+                                    <i class="bi text-primary bi-cash-stack fs-4"></i>
+                                      @fraudList.Sum(f => f.PreviousAmount)
+                                      <br/>
+                                       <span class="fw-semibold text-dark">
+                                      @fraudList.Sum(f => f.PreviousNumber)
+                                       </span>
+                                      </div>
+                            </div>
+                        
+                             <div class="text-primary p-2">
+                               
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+            <div class="col-md-3">
+                 <Card Style="border: none; border-left: 3px solid #c44368; border-bottom: 10px solid #c44368;" 
+      Class="shadow-lg h-100">
+                    <CardBody>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Current </div>
+                                <div class="fs-3 fw-bold text-dark">
+                                    
+                                <i class="bi text-warning-emphasis bi-cash-stack  fs-4"></i>
+                                    @fraudList.Sum(f => f.CurrentAmount)
+                                    <br/>
+                                     <span class="fw-semibold text-dark">
+                                    @fraudList.Sum(f => f.CurrentNumber)
+                                     </span>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+            <div class="col-md-3">
+                <Card Style="border: none; border-left: 3px solid #fe9d50; border-bottom: 10px solid #fe9d50;" 
+      Class="shadow-lg h-100">
+                    <CardBody>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Outstandig</div>
+                                <div class="fs-3 fw-bold text-dark">
 
-<QuickGrid Class="table" Items="context.Fraud">
-    @* <PropertyColumn Property="fraud => fraud.Category" Title="Category" />
-    <PropertyColumn Property="fraud => fraud.FraudType" Title="Type" /> *@
-    <PropertyColumn Property="fraud => fraud.PreviousNumber" Title="Prev. No." />
-    <PropertyColumn Property="fraud => fraud.PreviousAmount" Title="Prev. Amt" />
-    <PropertyColumn Property="fraud => fraud.CurrentNumber" Title="Curr. No." />
-    <PropertyColumn Property="fraud => fraud.CurrentAmount" Title="Curr. Amt" />
-    <PropertyColumn Property="fraud => fraud.RecoveredNumber" Title="Rec. No." />
-    <PropertyColumn Property="fraud => fraud.RecoveredAmount" Title="Rec. Amt" />
-    <PropertyColumn Property="fraud => fraud.OutstandingNumber" Title="Out. No." />
-    <PropertyColumn Property="fraud => fraud.OutstandingAmount" Title="Out. Amt" />
+                                <i class="bi text-danger bi-exclamation-triangle  fs-4"></i>
+                                    @fraudList.Sum(f => f.OutstandingAmount)
+                                    <br/>
+                                     <span class="fw-semibold text-dark">
+                                    @fraudList.Sum(f => f.OutstandingNumber)
+                                     </span>
+                                </div>
+                            </div>
+                       
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+            <div class="col-md-3">
+                <Card Style="border: none; border-left: 3px solid #5dc58f; border-bottom: 10px solid #5dc58f;" 
+      Class="shadow-lg h-100">
+                    <CardBody>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Recovered</div>
+                                <div class="fs-3 fw-bold text-dark">
+                                     
+                                     <i class="bi text-success bi-check-circle fs-4"></i>
+                                    @fraudList.Sum(f => f.RecoveredAmount)
+                                    <br/>
 
-    <TemplateColumn Context="fraud">
-        <a href="@($"frauds/edit?id={fraud.Id}")">Edit</a> |
-        <a href="@($"frauds/details?id={fraud.Id}")">Details</a> |
-        <a href="@($"frauds/delete?id={fraud.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
+                                    @fraudList.Sum(f => f.RecoveredNumber)
+                                  
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+        </div>
+    }
 
+<hr />
+    <!-- Case Cards Horizontal Scroller -->
+   
+    @if (fraudList == null)
+    {   
+        <div class="d-flex align-items-center gap-2 text-muted p-4">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <span>Loading outstanding cases...</span>
+        </div>
+    }
+    else if (!fraudList.Any())
+    {
+        <Card Class="border-0 shadow-sm">
+            <CardBody Class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <h5 class="fw-semibold mt-3 mb-1">No fraud records found</h5>
+                <p class="text-muted mb-3">The general ledger currently has no fraud cases recorded.</p>
+                <a href="frauds/create" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Create First Case
+                </a>
+            </CardBody>
+        </Card>
+    }
+    else
+    {
+          <h3>Case Record </h3>
+        <div class="horizontal-card-scroller my-2 pb-3">
+           
+            @foreach (var fraud in fraudList)
+            {
+                <div class="fraud-data-card border-2  shadow-lg">
+                    <!-- Card Header with badges -->
+                    <div class="p-3  d-flex  justify-content-between align-items-center">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                            @(fraud.Category ?? "General")
+                        </span>
+                        <span class="badge bg-secondary-subtle text-secondary">
+                            @(fraud.FraudType ?? "Unclassified")
+                        </span>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-3  shadow-lg">
+                        <!-- Prev State -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="small-label">Prev. Count</div>
+                                <div class="fw-semibold text-dark">@fraud.PreviousNumber</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small-label">Prev. Amount</div>
+                                <div class="fw-semibold text-dark">@fraud.PreviousAmount.ToString("N2")</div>
+                            </div>
+                        </div>
+
+                        <!-- Current State -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="small-label">Current Count</div>
+                                <div class="fw-semibold text-secondary">@fraud.CurrentNumber</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small-label">Current Amount</div>
+                                <div class="fw-semibold text-secondary">@fraud.CurrentAmount.ToString("N2")</div>
+                            </div>
+                        </div>
+
+                        <!-- Recovered -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="small-label">Recovered</div>
+                                <div class="fw-semibold text-success">@fraud.RecoveredNumber</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small-label">Rec. Amount</div>
+                                <div class="fw-semibold text-success">@fraud.RecoveredAmount.ToString("N2")</div>
+                            </div>
+                        </div>
+                        <hr/>
+                        <!-- Outstanding (highlighted) -->
+                        <div class="bg-danger-subtle rounded-3 p-2 row g-2">
+                            <div class="col-6">
+                                <div class="small-label text-danger-emphasis">Outstanding</div>
+                                <div class="fw-bold text-danger fs-5">@fraud.OutstandingNumber</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small-label text-danger-emphasis">Out. Amount</div>
+                                <div class="fw-bold text-danger fs-5">@fraud.OutstandingAmount.ToString("N2")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="p-2 border-top bg-light d-flex justify-content-around">
+                        <a href="@($"frauds/edit?id={fraud.Id}")" class="btn btn-sm btn-link text-decoration-none fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i>Edit
+                        </a>
+                        <a href="@($"frauds/details?id={fraud.Id}")" class="btn btn-sm btn-link text-secondary text-decoration-none fw-semibold">
+                            <i class="bi bi-eye me-1"></i>Details
+                        </a>
+                        <a href="@($"frauds/delete?id={fraud.Id}")" class="btn btn-sm btn-link text-danger text-decoration-none fw-semibold">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
 
 @code {
     private ApplicationDbContext context = default!;
+    private List<Fraud>? fraudList;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
+        fraudList = await context.Fraud.ToListAsync();
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }
+
+<style>
+    /* Horizontal Scroller */
+    .horizontal-card-scroller {
+        display: flex;
+        flex-direction: row;
+        gap: 1.25rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Individual case card */
+    .fraud-data-card {
+        flex: 0 0 320px;
+       
+        scroll-snap-align: start;
+        background-color: #ffffff;
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fraud-data-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .small-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6b7280;
+        margin-bottom: 0.15rem;
+    }
+
+    /* Custom scrollbar */
+    .horizontal-card-scroller::-webkit-scrollbar {
+        height: 8px;
+    }
+    .horizontal-card-scroller::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    .horizontal-card-scroller::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .horizontal-card-scroller::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>

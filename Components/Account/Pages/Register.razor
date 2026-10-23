@@ -1,5 +1,7 @@
 ﻿@page "/Account/Register"
 
+
+
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
@@ -70,15 +72,16 @@
         Input ??= new();
     }
 
-    public async Task RegisterUser(EditContext editContext)
+       public async Task RegisterUser(EditContext editContext)
     {
         var user = CreateUser();
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        
         var result = await UserManager.CreateAsync(user, Input.Password);
-
+        
         if (!result.Succeeded)
         {
             identityErrors = result.Errors;
@@ -87,26 +90,17 @@
 
         Logger.LogInformation("User created a new account with password.");
 
-        var userId = await UserManager.GetUserIdAsync(user);
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+        // OPTIONAL: Automatically assign the user to your default role here!
+        // await UserManager.AddToRoleAsync(user, "User");
 
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+        // 1. Sign the user into the application immediately
+        await SignInManager.SignInAsync(user, isPersistent: false);
 
-        if (UserManager.Options.SignIn.RequireConfirmedAccount)
-        {
-            RedirectManager.RedirectTo(
-                "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
-        }
-        else
-        {
-            await SignInManager.SignInAsync(user, isPersistent: false);
-            RedirectManager.RedirectTo(ReturnUrl);
-        }
+        // 2. Clear out any complex redirect parameters and fall back cleanly to home "/"
+        var targetUrl = string.IsNullOrEmpty(ReturnUrl) || ReturnUrl.Contains("Account/") ? "/" : ReturnUrl;
+        
+        // 3. Perform the actual redirection
+        RedirectManager.RedirectTo(targetUrl);
     }
 
     private ApplicationUser CreateUser()
