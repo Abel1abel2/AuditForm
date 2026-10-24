@@ -39,13 +39,13 @@
     else
     {
         <div class="row g-4">
-            <!-- Left Column: Classification -->
+            <!-- Left Column: Classification & Period -->
             <div class="col-lg-5">
                 <Card Class="border-0 shadow-sm h-100">
                     <CardHeader Class="bg-primary text-white border-0 py-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-tags fs-5"></i>
-                            <h5 class="mb-0 fw-semibold">Classification</h5>
+                            <h5 class="mb-0 fw-semibold">Case Information</h5>
                         </div>
                     </CardHeader>
                     <CardBody Class="p-4">
@@ -53,16 +53,22 @@
                             <div class="text-muted small text-uppercase fw-semibold mb-1">Category</div>
                             <div class="fs-5 fw-bold text-dark">@(fraud.Category ?? "N/A")</div>
                         </div>
-                        <div>
+                        <div class="mb-4">
                             <div class="text-muted small text-uppercase fw-semibold mb-1">Fraud Type</div>
                             <div class="fs-5 fw-bold text-dark">@(fraud.FraudType ?? "N/A")</div>
                         </div>
                         
                         <hr class="my-4 text-muted opacity-25" />
                         
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small fw-semibold">Record ID</span>
-                            <span class="badge bg-light text-dark border">#@fraud.Id</span>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Start Date</div>
+                                <div class="fw-semibold text-dark">@fraud.StartDate.ToString("yyyy-MM-dd")</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Deadline</div>
+                                <div class="fw-semibold text-dark">@fraud.Deadline.ToString("yyyy-MM-dd")</div>
+                            </div>
                         </div>
                     </CardBody>
                 </Card>
@@ -134,11 +140,11 @@
                 </Card>
 
                 <!-- Outstanding State (Highlighted) -->
-                <Card Class="border-0 shadow-lg" Style="border-left: 5px solid #dc3545 !important;">
+                <Card Class="border-0 shadow-lg mb-4" Style="border-left: 5px solid #dc3545 !important;">
                     <CardBody Class="p-4">
                         <div class="d-flex align-items-center gap-2 mb-3">
                             <i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>
-                            <h5 class="fw-bold mb-0 text-danger">Outstanding Balance</h5>
+                            <h5 class="fw-bold mb-0 text-danger">Outstanding</h5>
                         </div>
                         <div class="bg-danger-subtle rounded p-3 row g-2">
                             <div class="col-6">
@@ -148,6 +154,26 @@
                             <div class="col-6 border-start border-danger-subtle">
                                 <div class="text-danger-emphasis small text-uppercase fw-semibold mb-1">Amount</div>
                                 <div class="fs-3 fw-bold text-danger">@fraud.OutstandingAmount.ToString("N2")</div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+
+                <!-- Write-offs & Provisions (NEW) -->
+                <Card Class="border-0 shadow-sm">
+                    <CardBody Class="p-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-shield-exclamation text-warning fs-5"></i>
+                            <h6 class="fw-bold mb-0 text-warning-emphasis">Write-offs & Provisions</h6>
+                        </div>
+                        <div class="bg-warning-subtle rounded p-3 row g-2">
+                            <div class="col-6">
+                                <div class="text-warning-emphasis small text-uppercase fw-semibold mb-1">Amount Written Off</div>
+                                <div class="fs-5 fw-bold text-warning-emphasis">@fraud.WrittenOffAmount.ToString("N2")</div>
+                            </div>
+                            <div class="col-6 border-start border-warning-subtle">
+                                <div class="text-warning-emphasis small text-uppercase fw-semibold mb-1">Provision Held</div>
+                                <div class="fs-5 fw-bold text-warning-emphasis">@fraud.ProvisionAmount.ToString("N2")</div>
                             </div>
                         </div>
                     </CardBody>

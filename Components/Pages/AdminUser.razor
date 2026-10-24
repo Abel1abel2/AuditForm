@@ -1,0 +1,108 @@
+﻿@page "/admin/users"
+@attribute [Authorize(Roles = "Admin")]
+@using Microsoft.AspNetCore.Identity
+@using AuditForm.Data
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>User Management</PageTitle>
+
+<div class="container py-4">
+    <h1 class="fw-bold mb-4">User Management</h1>
+    <p class="text-muted">Manage user roles for the system.</p>
+
+    @if (users == null)
+    {
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Username</th>
+                            <th>Current Role</th>
+                            <th>Change Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in users)
+                        {
+                            <tr>
+                                <td class="align-middle fw-semibold">@item.User.UserName</td>
+                                <td class="align-middle">
+                                    <span class="badge @(item.Role == "Admin" ? "bg-danger" : "bg-primary")">
+                                        @item.Role
+                                    </span>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="d-flex gap-2">
+                                        <select @onchange="e => ChangeRole(item.User, e.Value?.ToString())" class="form-select form-select-sm" style="width: 150px;">
+                                            <option value="Audit" selected="@(item.Role == "Audit")">Audit</option>
+                                            <option value="Admin" selected="@(item.Role == "Admin")">Admin</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // Create a small model to hold the User and their Role together
+    private class UserRoleViewModel
+    {
+        public ApplicationUser User { get; set; } = default!;
+        public string Role { get; set; } = "None";
+    }
+
+    private List<UserRoleViewModel>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        var userList = await UserManager.Users.ToListAsync();
+        var viewModelList = new List<UserRoleViewModel>();
+
+        foreach (var user in userList)
+        {
+            var roles = await UserManager.GetRolesAsync(user);
+            viewModelList.Add(new UserRoleViewModel
+            {
+                User = user,
+                Role = roles.FirstOrDefault() ?? "None"
+            });
+        }
+
+        users = viewModelList;
+    }
+
+    private async Task ChangeRole(ApplicationUser user, string? newRole)
+    {
+        if (string.IsNullOrEmpty(newRole)) return;
+
+        var currentRoles = await UserManager.GetRolesAsync(user);
+        
+        // Remove existing roles
+        await UserManager.RemoveFromRolesAsync(user, currentRoles);
+        
+        // Add the new role
+        await UserManager.AddToRoleAsync(user, newRole);
+
+        // Refresh the list to show the new role
+        await LoadUsersAsync();
+    }
+}

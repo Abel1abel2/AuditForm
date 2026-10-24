@@ -1,106 +1,145 @@
 ﻿@page "/Account/Register"
-
-
-
 @using System.ComponentModel.DataAnnotations
-@using System.Text
-@using System.Text.Encodings.Web
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
 @using AuditForm.Data
-
+@using AuditForm.Dtos
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.Identity
+@rendermode InteractiveServer
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
-@inject IEmailSender<ApplicationUser> EmailSender
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@using AuditForm.Repositary
+@inject LDPServices Ldp
 
 <PageTitle>Register</PageTitle>
+<Card>
+    <CardHeader>
+        <h1>Register</h1>
+        <Button Type="ButtonType.Button" @onclick="HandleAddNew">
+            <Icon Name="IconName.PlusCircle"/> Add New User
+        </Button>
+    </CardHeader>
+    <CardBody>
+        @if (flagAddNew && domainUser is null)
+        {
+            <div class="row">
+                 <div class="col-md-4">
+                        <InputText @bind-Value="searName" class="form-control" 
+                        placeholder="Enter user full name to search" />
+                 </div>            
+                 <div class="col-md-2">
+                      <button type="button" @onclick="SearchOnLDP" class="w-100 btn btn-lg btn-info">Search</button>
+                 </div>   
+            </div>
+                @if(domainUsers !=null && domainUsers.Any() && domainUser is null)
+                {
+                    <ul>
+                    @foreach(var d in domainUsers)
+                    {
+                        <li @onclick="@(()=>HanldeSelect(d))">@d.DisplayName</li>
+                    }
+                    </ul>
+                }
+        }else if(flagAddNew && domainUser is not null)
+        {
+            <div class="row">
+                <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                    <DataAnnotationsValidator />
+                    <h2>Create a new account.</h2>
+                    <hr />
+                    <ValidationSummary class="text-danger" role="alert" />
+                     <div class="alert alert-info">
+                        @domainUser.DisplayName
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Username" id="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="username" />
+                        <label for="Input.Username">Username</label>
+                        <ValidationMessage For="() => Input.Username" class="text-danger" />
+                    </div>            
+            
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+                </EditForm>
+            </div>
+        }
+    </CardBody>
+    <CardFooter>
+        @if (Users is not null && Users.Any())
+        {
+            <QuickGrid TGridItem="ApplicationUser"
+                       Items="@Users.AsQueryable()"
+                       Class="table table-hover table-striped table-sm align-middle">
 
-<h1>Register</h1>
+                <PropertyColumn Property="u => u.Id"
+                                Title="ID"
+                                Sortable="true" />
 
-<div class="row">
-    <div class="col-lg-6">
-        <StatusMessage Message="@Message" />
-        <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator />
-            <h2>Create a new account.</h2>
-            <hr />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label for="Input.Email">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
+                <PropertyColumn Property="u => u.UserName"
+                                Title="Username"
+                                Sortable="true" />
+              
+
+            </QuickGrid>
+        }
+        else
+        {
+            <div class="alert alert-info mb-0">
+                No users found.
             </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.Password">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger" />
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.ConfirmPassword">Confirm Password</label>
-                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
-    </div>
-</div>
+        }
+
+    </CardFooter>
+</Card>
+
+
+
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
+    bool flagAddNew;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = default!;
-
+    private UserRegDto Input  { get; set; } = default!;
+    private List<ApplicationUser> Users { get; set; } = new();
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
-
+    private List<DomainUser> domainUsers { get; set; }
+    private DomainUser domainUser { get; set; }
+    private string searName { get; set; }
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
 
     protected override void OnInitialized()
     {
         Input ??= new();
+        LoadUsers();
     }
-
-       public async Task RegisterUser(EditContext editContext)
+    void LoadUsers()
+    {
+        Users =  UserManager.Users.ToList();
+    }
+    public async Task RegisterUser(EditContext editContext)
     {
         var user = CreateUser();
 
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-        var emailStore = GetEmailStore();
-        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-        
-        var result = await UserManager.CreateAsync(user, Input.Password);
-        
+        await UserStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
+
+        var result = await UserManager.CreateAsync(user);
+
         if (!result.Succeeded)
         {
             identityErrors = result.Errors;
             return;
         }
 
-        Logger.LogInformation("User created a new account with password.");
+        Logger.LogInformation("User created a new account with username.");
 
-        // OPTIONAL: Automatically assign the user to your default role here!
-        // await UserManager.AddToRoleAsync(user, "User");
+        // --- ADD THIS BLOCK TO ASSIGN DEFAULT ROLE ---
+        await UserManager.AddToRoleAsync(user, "Audit");
 
-        // 1. Sign the user into the application immediately
-        await SignInManager.SignInAsync(user, isPersistent: false);
-
-        // 2. Clear out any complex redirect parameters and fall back cleanly to home "/"
-        var targetUrl = string.IsNullOrEmpty(ReturnUrl) || ReturnUrl.Contains("Account/") ? "/" : ReturnUrl;
-        
-        // 3. Perform the actual redirection
-        RedirectManager.RedirectTo(targetUrl);
+        LoadUsers();
+        // ---------------------------------------------        
     }
 
     private ApplicationUser CreateUser()
@@ -111,36 +150,28 @@
         }
         catch
         {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'.");
         }
     }
 
-    private IUserEmailStore<ApplicationUser> GetEmailStore()
+
+    private void HandleAddNew()
     {
-        if (!UserManager.SupportsUserEmail)
-        {
-            throw new NotSupportedException("The default UI requires a user store with email support.");
-        }
-        return (IUserEmailStore<ApplicationUser>)UserStore;
+        Input = new UserRegDto();
+        flagAddNew = true;
     }
 
-    private sealed class InputModel
+    private async Task SearchOnLDP()
     {
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
-        public string Email { get; set; } = "";
+        if (string.IsNullOrWhiteSpace(searName))
+            return;
 
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        [Display(Name = "Password")]
-        public string Password { get; set; } = "";
+        domainUsers = await Ldp.SearchUsersByFullName(searName.Trim());        
+    }
 
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; } = "";
+    private void HanldeSelect(DomainUser d)
+    {
+        domainUser = d;
+        Input.Username = d.Username;
     }
 }

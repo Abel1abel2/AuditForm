@@ -27,20 +27,31 @@
         <!-- Global validation summary -->
         <ValidationSummary class="text-danger mb-3" role="alert" />
 
-        <!-- SECTION 1: Classification -->
+        <!-- SECTION 1: Reporting Period & Classification -->
         <Card Class="border-0 shadow-sm mb-3">
             <CardHeader Class="bg-white border-bottom">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-tags text-primary"></i>
-                    <h6 class="fw-semibold mb-0">Classification</h6>
+                    <i class="bi bi-calendar-event text-primary"></i>
+                    <h6 class="fw-semibold mb-0">Reporting Period & Classification</h6>
                 </div>
             </CardHeader>
             <CardBody>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="startdate" class="form-label fw-semibold">Start Date <span class="text-danger">*</span></label>
+                        <InputDate id="startdate" @bind-Value="Fraud.StartDate" class="form-control" />
+                        <ValidationMessage For="() => Fraud.StartDate" class="text-danger small" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="deadline" class="form-label fw-semibold">Deadline (End Date) <span class="text-danger">*</span></label>
+                        <InputDate id="deadline" @bind-Value="Fraud.Deadline" class="form-control" />
+                        <ValidationMessage For="() => Fraud.Deadline" class="text-danger small" />
+                    </div>
+                </div>
+                <hr class="text-muted opacity-25 my-3" />
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label for="category" class="form-label fw-semibold">
-                            Category <span class="text-danger">*</span>
-                        </label>
+                        <label for="category" class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
                         <InputSelect id="category" @bind-Value="Fraud.Category" class="form-select" aria-required="true">
                             <option value="">-- Select a Category --</option>
                             @foreach (var cat in Categories)
@@ -50,11 +61,8 @@
                         </InputSelect>
                         <ValidationMessage For="() => Fraud.Category" class="text-danger small" />
                     </div>
-
                     <div class="col-md-6">
-                        <label for="fraudtype" class="form-label fw-semibold">
-                            Fraud Type <span class="text-danger">*</span>
-                        </label>
+                        <label for="fraudtype" class="form-label fw-semibold">Fraud Type <span class="text-danger">*</span></label>
                         <InputSelect id="fraudtype" @bind-Value="Fraud.FraudType" class="form-select" aria-required="true">
                             <option value="">-- Select a Fraud Type --</option>
                             @foreach (var type in FraudTypes)
@@ -149,6 +157,36 @@
             </CardBody>
         </Card>
 
+        <!-- SECTION 5: Write-offs & Provisions -->
+        <Card Class="border-0 shadow-sm mb-3">
+            <CardHeader Class="bg-white border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-exclamation text-warning"></i>
+                    <h6 class="fw-semibold mb-0">Write-offs & Provisions</h6>
+                </div>
+            </CardHeader>
+            <CardBody>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="writtenoffamount" class="form-label fw-semibold">Amount Written Off</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <InputNumber id="writtenoffamount" @bind-Value="Fraud.WrittenOffAmount" class="form-control" />
+                        </div>
+                        <ValidationMessage For="() => Fraud.WrittenOffAmount" class="text-danger small" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="provisionamount" class="form-label fw-semibold">Provision Held</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <InputNumber id="provisionamount" @bind-Value="Fraud.ProvisionAmount" class="form-control" />
+                        </div>
+                        <ValidationMessage For="() => Fraud.ProvisionAmount" class="text-danger small" />
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+
         <!-- Computed outstanding preview -->
         <div class="alert alert-danger d-flex align-items-center gap-3 mb-3" role="alert">
             <i class="bi bi-exclamation-triangle fs-4"></i>
@@ -199,7 +237,15 @@
         "Embezzlement", "Cheating", "Forgery / Using Fake Instruments", "Other"
     };
 
-    protected override void OnInitialized() => Fraud ??= new();
+    protected override void OnInitialized()
+    {
+        Fraud ??= new()
+        {
+            StartDate = DateTime.Today,
+            Deadline = DateTime.Today 
+           
+        };
+    }
 
     private async Task AddFraud()
     {

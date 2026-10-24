@@ -38,28 +38,36 @@
 
             <input type="hidden" name="Fraud.Id" value="@Fraud.Id" />
 
-            <!-- SECTION 1: Classification -->
+            <!-- SECTION 1: Reporting Period & Classification -->
             <Card Class="border-0 shadow-sm mb-3">
                 <CardHeader Class="bg-white border-bottom">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-tags text-primary"></i>
-                        <h6 class="fw-semibold mb-0">Classification</h6>
+                        <i class="bi bi-calendar-event text-primary"></i>
+                        <h6 class="fw-semibold mb-0">Reporting Period & Classification</h6>
                     </div>
                 </CardHeader>
                 <CardBody>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="startdate" class="form-label fw-semibold">Start Date <span class="text-danger">*</span></label>
+                            <InputDate id="startdate" @bind-Value="Fraud.StartDate" class="form-control" />
+                            <ValidationMessage For="() => Fraud.StartDate" class="text-danger small" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="deadline" class="form-label fw-semibold">Deadline (End Date) <span class="text-danger">*</span></label>
+                            <InputDate id="deadline" @bind-Value="Fraud.Deadline" class="form-control" />
+                            <ValidationMessage For="() => Fraud.Deadline" class="text-danger small" />
+                        </div>
+                    </div>
+                    <hr class="text-muted opacity-25 my-3" />
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="category" class="form-label fw-semibold">
-                                Category <span class="text-danger">*</span>
-                            </label>
+                            <label for="category" class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
                             <InputText id="category" @bind-Value="Fraud.Category" class="form-control" aria-required="true" />
                             <ValidationMessage For="() => Fraud.Category" class="text-danger small" />
                         </div>
-
                         <div class="col-md-6">
-                            <label for="fraudtype" class="form-label fw-semibold">
-                                Fraud Type <span class="text-danger">*</span>
-                            </label>
+                            <label for="fraudtype" class="form-label fw-semibold">Fraud Type <span class="text-danger">*</span></label>
                             <InputText id="fraudtype" @bind-Value="Fraud.FraudType" class="form-control" aria-required="true" />
                             <ValidationMessage For="() => Fraud.FraudType" class="text-danger small" />
                         </div>
@@ -148,6 +156,36 @@
                 </CardBody>
             </Card>
 
+            <!-- SECTION 5: Write-offs & Provisions -->
+            <Card Class="border-0 shadow-sm mb-3">
+                <CardHeader Class="bg-white border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-exclamation text-warning"></i>
+                        <h6 class="fw-semibold mb-0">Write-offs & Provisions</h6>
+                    </div>
+                </CardHeader>
+                <CardBody>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="writtenoffamount" class="form-label fw-semibold">Amount Written Off</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <InputNumber id="writtenoffamount" @bind-Value="Fraud.WrittenOffAmount" class="form-control" />
+                            </div>
+                            <ValidationMessage For="() => Fraud.WrittenOffAmount" class="text-danger small" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="provisionamount" class="form-label fw-semibold">Provision Held</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <InputNumber id="provisionamount" @bind-Value="Fraud.ProvisionAmount" class="form-control" />
+                            </div>
+                            <ValidationMessage For="() => Fraud.ProvisionAmount" class="text-danger small" />
+                        </div>
+                    </div>
+                </CardBody>
+            </Card>
+
             <!-- Computed outstanding preview (Read-Only) -->
             <div class="alert alert-danger d-flex align-items-center gap-3 mb-3" role="alert">
                 <i class="bi bi-exclamation-triangle fs-4"></i>
@@ -199,13 +237,26 @@
         {
             NavigationManager.NotFound();
         }
+        else
+        {
+            // If the database has an old record with the default 0001-01-01 date, 
+            // set it to today so the calendar input doesn't start at year 1.
+            if (Fraud.StartDate == DateTime.MinValue)
+            {
+                Fraud.StartDate = DateTime.Today;
+            }
+            
+            if (Fraud.Deadline == DateTime.MinValue)
+            {
+                Fraud.Deadline = DateTime.Today;
+            }
+        }
     }
 
     private async Task UpdateFraud()
     {
         using var context = DbFactory.CreateDbContext();
         
-        // Recalculate the outstanding values before saving
         Fraud!.OutstandingNumber = Fraud.PreviousNumber + Fraud.CurrentNumber - Fraud.RecoveredNumber;
         Fraud.OutstandingAmount = Fraud.PreviousAmount + Fraud.CurrentAmount - Fraud.RecoveredAmount;
 

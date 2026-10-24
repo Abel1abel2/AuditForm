@@ -37,5 +37,21 @@ namespace AuditForm.Model
         [Column(TypeName = "decimal(18,2)")]
         public decimal OutstandingAmount { get; set; }
 
+        [DataType(DataType.Currency)]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal WrittenOffAmount { get; set; }
+
+        [DataType(DataType.Currency)]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal ProvisionAmount { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime StartDate { get; set; }
+        public DateTime Deadline { get; set; }
+
+
+
     }
-}
+
+    }
+

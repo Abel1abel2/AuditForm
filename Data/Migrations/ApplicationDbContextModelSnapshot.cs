@@ -100,11 +100,17 @@ namespace AuditForm.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal>("CurrentAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("CurrentNumber")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("Deadline")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("FraudType")
                         .IsRequired()
@@ -122,11 +128,20 @@ namespace AuditForm.Migrations
                     b.Property<int>("PreviousNumber")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("ProvisionAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("RecoveredAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("RecoveredNumber")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("WrittenOffAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
