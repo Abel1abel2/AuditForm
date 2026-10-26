@@ -96,36 +96,33 @@ namespace AuditForm.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("CurrentAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("CurrentNumber")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Deadline")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FraudType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("OccurredOn")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal>("OutstandingAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("OutstandingNumber")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PreviousAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("PreviousNumber")
                         .HasColumnType("int");
 
                     b.Property<decimal>("ProvisionAmount")
@@ -134,11 +131,15 @@ namespace AuditForm.Migrations
                     b.Property<decimal>("RecoveredAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("RecoveredNumber")
+                    b.Property<int>("RecoveredCount")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ReportedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("WrittenOffAmount")
                         .HasColumnType("decimal(18,2)");

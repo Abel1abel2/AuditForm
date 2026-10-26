@@ -1,22 +1,21 @@
 @page "/frauds/edit"
-@attribute [Authorize]
+
 @using Microsoft.EntityFrameworkCore
 @using AuditForm.Model
 @using BlazorBootstrap
 @inject IDbContextFactory<AuditForm.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Edit Fraud Case</PageTitle>
+<PageTitle>Edit Fraud</PageTitle>
 
 <div class="container py-4" style="max-width: 960px;">
 
-    <!-- Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h1 class="fw-bold text-dark mb-1">Edit Fraud Case</h1>
+            <h1 class="fw-bold text-dark mb-1">Edit Fraud</h1>
             <p class="text-muted mb-0 small">Update the details of this fraud entry.</p>
         </div>
-        <a href="/frauds" class="btn btn-outline-secondary">
+        <a href="@BackUrl" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-2"></i>Back to List
         </a>
     </div>
@@ -25,194 +24,83 @@
     {
         <div class="d-flex align-items-center gap-2 text-muted p-4">
             <div class="spinner-border spinner-border-sm" role="status"></div>
-            <span>Loading case details...</span>
+            <span>Loading details...</span>
         </div>
     }
     else
     {
-        <EditForm method="post" Model="Fraud" OnValidSubmit="UpdateFraud" FormName="edit" Enhance>
+        <EditForm Model="Fraud" OnValidSubmit="UpdateFraud">
             <DataAnnotationsValidator />
-
-            <!-- Global validation summary -->
             <ValidationSummary class="text-danger mb-3" role="alert" />
 
-            <input type="hidden" name="Fraud.Id" value="@Fraud.Id" />
-
-            <!-- SECTION 1: Reporting Period & Classification -->
             <Card Class="border-0 shadow-sm mb-3">
                 <CardHeader Class="bg-white border-bottom">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-calendar-event text-primary"></i>
-                        <h6 class="fw-semibold mb-0">Reporting Period & Classification</h6>
+                        <i class="bi bi-exclamation-triangle text-danger"></i>
+                        <h6 class="fw-semibold mb-0">Fraud Occurrence</h6>
                     </div>
                 </CardHeader>
                 <CardBody>
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label for="startdate" class="form-label fw-semibold">Start Date <span class="text-danger">*</span></label>
-                            <InputDate id="startdate" @bind-Value="Fraud.StartDate" class="form-control" />
-                            <ValidationMessage For="() => Fraud.StartDate" class="text-danger small" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="deadline" class="form-label fw-semibold">Deadline (End Date) <span class="text-danger">*</span></label>
-                            <InputDate id="deadline" @bind-Value="Fraud.Deadline" class="form-control" />
-                            <ValidationMessage For="() => Fraud.Deadline" class="text-danger small" />
-                        </div>
-                    </div>
-                    <hr class="text-muted opacity-25 my-3" />
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="category" class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
-                            <InputText id="category" @bind-Value="Fraud.Category" class="form-control" aria-required="true" />
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Date Occurred <span class="text-danger">*</span></label>
+                            <InputDate @bind-Value="Fraud.OccurredOn" class="form-control" />
+                            <ValidationMessage For="() => Fraud.OccurredOn" class="text-danger small" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                            <InputSelect @bind-Value="Fraud.Category" class="form-select">
+                                <option value="">-- Select --</option>
+                                @foreach (var cat in Categories)
+                                {
+                                    <option value="@cat">@cat</option>
+                                }
+                            </InputSelect>
                             <ValidationMessage For="() => Fraud.Category" class="text-danger small" />
                         </div>
-                        <div class="col-md-6">
-                            <label for="fraudtype" class="form-label fw-semibold">Fraud Type <span class="text-danger">*</span></label>
-                            <InputText id="fraudtype" @bind-Value="Fraud.FraudType" class="form-control" aria-required="true" />
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Fraud Type <span class="text-danger">*</span></label>
+                            <InputSelect @bind-Value="Fraud.FraudType" class="form-select">
+                                <option value="">-- Select --</option>
+                                @foreach (var t in FraudTypes)
+                                {
+                                    <option value="@t">@t</option>
+                                }
+                            </InputSelect>
                             <ValidationMessage For="() => Fraud.FraudType" class="text-danger small" />
                         </div>
-                    </div>
-                </CardBody>
-            </Card>
 
-            <!-- SECTION 2: Previous State -->
-            <Card Class="border-0 shadow-sm mb-3">
-                <CardHeader Class="bg-white border-bottom">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-clock-history text-secondary"></i>
-                        <h6 class="fw-semibold mb-0">Previous State</h6>
-                    </div>
-                </CardHeader>
-                <CardBody>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="previousnumber" class="form-label fw-semibold">Previous Count</label>
-                            <InputNumber id="previousnumber" @bind-Value="Fraud.PreviousNumber" class="form-control" />
-                            <ValidationMessage For="() => Fraud.PreviousNumber" class="text-danger small" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="previousamount" class="form-label fw-semibold">Previous Amount</label>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Amount</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <InputNumber id="previousamount" @bind-Value="Fraud.PreviousAmount" class="form-control" />
+                                <InputNumber @bind-Value="Fraud.Amount" class="form-control" />
                             </div>
-                            <ValidationMessage For="() => Fraud.PreviousAmount" class="text-danger small" />
                         </div>
-                    </div>
-                </CardBody>
-            </Card>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Status</label>
+                            <InputSelect @bind-Value="Fraud.Status" class="form-select">
+                                <option>Open</option>
+                                <option>Under review</option>
+                                <option>Recovered</option>
+                                <option>Closed</option>
+                            </InputSelect>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Reported By</label>
+                            <InputText @bind-Value="Fraud.ReportedBy" class="form-control" />
+                        </div>
 
-            <!-- SECTION 3: Current State -->
-            <Card Class="border-0 shadow-sm mb-3">
-                <CardHeader Class="bg-white border-bottom">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-activity text-primary"></i>
-                        <h6 class="fw-semibold mb-0">Current State</h6>
-                    </div>
-                </CardHeader>
-                <CardBody>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="currentnumber" class="form-label fw-semibold">Current Count</label>
-                            <InputNumber id="currentnumber" @bind-Value="Fraud.CurrentNumber" class="form-control" />
-                            <ValidationMessage For="() => Fraud.CurrentNumber" class="text-danger small" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="currentamount" class="form-label fw-semibold">Current Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <InputNumber id="currentamount" @bind-Value="Fraud.CurrentAmount" class="form-control" />
-                            </div>
-                            <ValidationMessage For="() => Fraud.CurrentAmount" class="text-danger small" />
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Description</label>
+                            <InputTextArea @bind-Value="Fraud.Description" class="form-control" rows="4" />
                         </div>
                     </div>
                 </CardBody>
             </Card>
 
-            <!-- SECTION 4: Recovery -->
-            <Card Class="border-0 shadow-sm mb-3">
-                <CardHeader Class="bg-white border-bottom">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-arrow-counterclockwise text-success"></i>
-                        <h6 class="fw-semibold mb-0">Recovery</h6>
-                    </div>
-                </CardHeader>
-                <CardBody>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="recoverednumber" class="form-label fw-semibold">Recovered Count</label>
-                            <InputNumber id="recoverednumber" @bind-Value="Fraud.RecoveredNumber" class="form-control" />
-                            <ValidationMessage For="() => Fraud.RecoveredNumber" class="text-danger small" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="recoveredamount" class="form-label fw-semibold">Recovered Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <InputNumber id="recoveredamount" @bind-Value="Fraud.RecoveredAmount" class="form-control" />
-                            </div>
-                            <ValidationMessage For="() => Fraud.RecoveredAmount" class="text-danger small" />
-                        </div>
-                    </div>
-                </CardBody>
-            </Card>
-
-            <!-- SECTION 5: Write-offs & Provisions -->
-            <Card Class="border-0 shadow-sm mb-3">
-                <CardHeader Class="bg-white border-bottom">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-shield-exclamation text-warning"></i>
-                        <h6 class="fw-semibold mb-0">Write-offs & Provisions</h6>
-                    </div>
-                </CardHeader>
-                <CardBody>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="writtenoffamount" class="form-label fw-semibold">Amount Written Off</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <InputNumber id="writtenoffamount" @bind-Value="Fraud.WrittenOffAmount" class="form-control" />
-                            </div>
-                            <ValidationMessage For="() => Fraud.WrittenOffAmount" class="text-danger small" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="provisionamount" class="form-label fw-semibold">Provision Held</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <InputNumber id="provisionamount" @bind-Value="Fraud.ProvisionAmount" class="form-control" />
-                            </div>
-                            <ValidationMessage For="() => Fraud.ProvisionAmount" class="text-danger small" />
-                        </div>
-                    </div>
-                </CardBody>
-            </Card>
-
-            <!-- Computed outstanding preview (Read-Only) -->
-            <div class="alert alert-danger d-flex align-items-center gap-3 mb-3" role="alert">
-                <i class="bi bi-exclamation-triangle fs-4"></i>
-                <div class="flex-grow-1">
-                    <div class="fw-semibold mb-1">Computed Outstanding</div>
-                    <div class="small">
-                        Outstanding = (Previous + Current) − Recovered.
-                        These values are automatically recalculated when you save.
-                    </div>
-                </div>
-                <div class="text-end">
-                    <div class="small text-uppercase fw-semibold">Count</div>
-                    <div class="fs-5 fw-bold">
-                        @(Fraud.PreviousNumber + Fraud.CurrentNumber - Fraud.RecoveredNumber)
-                    </div>
-                </div>
-                <div class="text-end border-start ps-3">
-                    <div class="small text-uppercase fw-semibold">Amount</div>
-                    <div class="fs-5 fw-bold">
-                        @((Fraud.PreviousAmount + Fraud.CurrentAmount - Fraud.RecoveredAmount).ToString("N2"))
-                    </div>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="d-flex justify-content-end gap-2">
-                <a href="/frauds" class="btn btn-outline-secondary px-4">Cancel</a>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="@BackUrl" class="btn btn-outline-secondary px-4">Cancel</a>
                 <button type="submit" class="btn btn-primary px-4 shadow-sm">
                     <i class="bi bi-check-lg me-2"></i>Save Changes
                 </button>
@@ -225,65 +113,41 @@
     [SupplyParameterFromQuery]
     private int Id { get; set; }
 
-    [SupplyParameterFromForm]
-    private Fraud? Fraud { get; set; }
+    [SupplyParameterFromQuery]
+    private string? Category { get; set; }
+
+    private Fraud? Fraud;
+
+    private readonly List<string> Categories = new()
+    {
+        "Cash", "Deposit Account", "Loan", "Forex",
+        "Interbank Accounts", "Clearing", "Off-Balance Sheet",
+        "Check / DDs", "Others"
+    };
+
+    private readonly List<string> FraudTypes = new()
+    {
+        "Embezzlement", "Cheating", "Forgery / Using Fake Instruments", "Other"
+    };
+
+    // Where "Back to List", "Cancel", and the post-save redirect go
+    private string BackUrl =>
+        string.IsNullOrEmpty(Category)
+            ? "/frauds"
+            : $"/frauds/category/{Uri.EscapeDataString(Category)}";
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        Fraud ??= await context.Fraud.FirstOrDefaultAsync(m => m.Id == Id);
-
-        if (Fraud is null)
-        {
-            NavigationManager.NotFound();
-        }
-        else
-        {
-            // If the database has an old record with the default 0001-01-01 date, 
-            // set it to today so the calendar input doesn't start at year 1.
-            if (Fraud.StartDate == DateTime.MinValue)
-            {
-                Fraud.StartDate = DateTime.Today;
-            }
-            
-            if (Fraud.Deadline == DateTime.MinValue)
-            {
-                Fraud.Deadline = DateTime.Today;
-            }
-        }
+        await using var context = await DbFactory.CreateDbContextAsync();
+        Fraud = await context.Fraud.FirstOrDefaultAsync(f => f.Id == Id);
+        if (Fraud is null) NavigationManager.NotFound();
     }
 
     private async Task UpdateFraud()
     {
-        using var context = DbFactory.CreateDbContext();
-        
-        Fraud!.OutstandingNumber = Fraud.PreviousNumber + Fraud.CurrentNumber - Fraud.RecoveredNumber;
-        Fraud.OutstandingAmount = Fraud.PreviousAmount + Fraud.CurrentAmount - Fraud.RecoveredAmount;
-
-        context.Attach(Fraud).State = EntityState.Modified;
-
-        try
-        {
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!FraudExists(Fraud.Id))
-            {
-                NavigationManager.NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        NavigationManager.NavigateTo("/frauds");
-    }
-
-    private bool FraudExists(int id)
-    {
-        using var context = DbFactory.CreateDbContext();
-        return context.Fraud.Any(e => e.Id == id);
+        await using var context = await DbFactory.CreateDbContextAsync();
+        context.Fraud.Update(Fraud!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo(BackUrl);
     }
 }

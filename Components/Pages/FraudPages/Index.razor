@@ -5,129 +5,72 @@
 @using AuditForm.Data
 @using BlazorBootstrap
 @implements IAsyncDisposable
-@inject IDbContextFactory<AuditForm.Data.ApplicationDbContext> DbFactory
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
-@inject ToastService ToastService
 
-<PageTitle>Fraud History</PageTitle>
+<PageTitle>Fraud Dashboard</PageTitle>
 
 <div class="container-fluid py-4">
-    <!-- Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h1 class="fw-bold text-dark mb-1">Fraud History</h1>
+            <h1 class="fw-bold text-dark mb-1">Fraud Dashboard</h1>
             <p class="text-muted mb-0 small">
-                Total cases: <span class="fw-semibold text-dark">@(fraudList?.Count ?? 0)</span>
+                Total entries: <span class="fw-semibold text-dark">@(fraudList?.Count ?? 0)</span>
             </p>
         </div>
-         
-
         <a href="frauds/create" class="btn btn-primary px-4 shadow-sm">
-            <i class="bi bi-plus-lg me-2"></i>Create New Case
+            <i class="bi bi-plus-lg me-2"></i>Register Fraud
         </a>
     </div>
 
-    <!-- Filter Section -->
-  
-
-    <!-- Summary -->
+    <!-- Summary Cards -->
     @if (fraudList != null && fraudList.Any())
     {
         <div class="row g-3 mb-4">
-            <div class="col-md-3">
+            <div class="col-md-6">
                 <Card Style="border: none; border-left: 3px solid #5a8dfb; border-bottom: 10px solid #5a8dfb;" Class="shadow-lg h-100">
                     <CardBody>
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="text-muted small text-uppercase fw-semibold mb-1">Previous </div>
-                                <div class="fs-3 fw-bold text-dark">
-                                    <i class="bi text-primary bi-cash-stack fs-4"></i>
-                                    @fraudList.Sum(f => f.PreviousAmount)
-                                    <br/>
-                                    <span class="fw-semibold text-dark">
-                                        @fraudList.Sum(f => f.PreviousNumber)
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">Total Amount</div>
+                        <div class="fs-3 fw-bold text-dark">
+                            <i class="bi text-primary bi-cash-stack fs-4"></i>
+                            $@fraudList.Sum(f => f.Amount).ToString("N2")
                         </div>
                     </CardBody>
                 </Card>
             </div>
-            <div class="col-md-3">
-                <Card Style="border: none; border-left: 3px solid #c44368; border-bottom: 10px solid #c44368;" Class="shadow-lg h-100">
-                    <CardBody>
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="text-muted small text-uppercase fw-semibold mb-1">Current </div>
-                                <div class="fs-3 fw-bold text-dark">
-                                    <i class="bi text-warning-emphasis bi-cash-stack fs-4"></i>
-                                    @fraudList.Sum(f => f.CurrentAmount)
-                                    <br/>
-                                    <span class="fw-semibold text-dark">
-                                        @fraudList.Sum(f => f.CurrentNumber)
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-6">
                 <Card Style="border: none; border-left: 3px solid #fe9d50; border-bottom: 10px solid #fe9d50;" Class="shadow-lg h-100">
                     <CardBody>
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="text-muted small text-uppercase fw-semibold mb-1">Outstanding</div>
-                                <div class="fs-3 fw-bold text-dark">
-                                    <i class="bi text-danger bi-exclamation-triangle fs-4"></i>
-                                    @fraudList.Sum(f => f.OutstandingAmount)
-                                    <br/>
-                                    <span class="fw-semibold text-dark">
-                                        @fraudList.Sum(f => f.OutstandingNumber)
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
-            </div>
-            <div class="col-md-3">
-                <Card Style="border: none; border-left: 3px solid #5dc58f; border-bottom: 10px solid #5dc58f;" Class="shadow-lg h-100">
-                    <CardBody>
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="text-muted small text-uppercase fw-semibold mb-1">Recovered</div>
-                                <div class="fs-3 fw-bold text-dark">
-                                    <i class="bi text-success bi-check-circle fs-4"></i>
-                                    @fraudList.Sum(f => f.RecoveredAmount)
-                                    <br/>
-                                    <span class="fw-semibold text-dark">
-                                        @fraudList.Sum(f => f.RecoveredNumber)
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">Active Cases</div>
+                        <div class="fs-3 fw-bold text-dark">
+                            <i class="bi text-warning bi-exclamation-triangle fs-4"></i>
+                            @fraudList.Count(f => f.Status != "Closed" && f.Status != "Recovered")
                         </div>
                     </CardBody>
                 </Card>
             </div>
         </div>
     }
-     <hr />
 
-      <Card Class="border-0 shadow-sm mb-4">
+    <hr />
+
+    <!-- Filter Section -->
+    <Card Class="border-0 shadow-sm mb-4">
         <CardBody Class="p-3">
             <div class="row g-3 align-items-end">
-                <div class="col-md-4 col-sm-6">
-                    <label class="form-label small fw-semibold text-muted mb-1">Filter Start Date</label>
-                    <input type="date" @bind="FilterStartDate" class="form-control" />
-                </div>
-                <div class="col-md-4 col-sm-6">
-                    <label class="form-label small fw-semibold text-muted mb-1">Filter End Date</label>
-                    <input type="date" @bind="FilterEndDate" class="form-control" />
+                <div class="col-md-8 col-sm-12">
+                    <label class="form-label small fw-semibold text-muted mb-1">Filter by category</label>
+                    <select @bind="FilterCategory" class="form-select">
+                        <option value="">All categories</option>
+                        @foreach (var cat in allCategories)
+                        {
+                            <option value="@cat">@cat</option>
+                        }
+                    </select>
                 </div>
                 <div class="col-md-4 col-sm-12 d-flex gap-2">
                     <button @onclick="LoadFraudsAsync" class="btn btn-primary flex-grow-1">
-                        <i class="bi bi-filter me-1"></i> Apply Filter
+                        <i class="bi bi-search me-1"></i> Find
                     </button>
                     <button @onclick="ClearFilter" class="btn btn-outline-secondary">
                         <i class="bi bi-x-circle me-1"></i> Clear
@@ -136,14 +79,12 @@
             </div>
         </CardBody>
     </Card>
-   
-    
-    <!-- Case Cards Horizontal Scroller -->
+
+    <!-- Category Dashboard Tiles -->
     @if (fraudList == null)
-    {   
+    {
         <div class="d-flex align-items-center gap-2 text-muted p-4">
-            <div class="spinner-border spinner-border-sm" role="status"></div>
-            <span>Loading outstanding cases...</span>
+            <div class="spinner-border spinner-border-sm"></div><span>Loading fraud records...</span>
         </div>
     }
     else if (!fraudList.Any())
@@ -152,99 +93,32 @@
             <CardBody Class="text-center py-5">
                 <i class="bi bi-inbox fs-1 text-muted"></i>
                 <h5 class="fw-semibold mt-3 mb-1">No fraud records found</h5>
-                <p class="text-muted mb-3">No cases match your criteria or the ledger is empty.</p>
-                <a href="frauds/create" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-2"></i>Create First Case
-                </a>
             </CardBody>
         </Card>
     }
     else
     {
-        <h3>Case Record </h3>
-        <div class="horizontal-card-scroller my-2 pb-3">
-            @foreach (var fraud in fraudList)
+        <h3 class="mb-3">Categories</h3>
+        <div class="row g-3">
+            @foreach (var g in CategoryGroups())
             {
-                <div class="fraud-data-card border-2 shadow-lg">
-                    <!-- Card Header with badges and dates -->
-                    <div class="p-3 d-flex flex-column gap-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
-                                @(fraud.Category ?? "General")
-                            </span>
-                            <span class="badge bg-secondary-subtle text-secondary">
-                                @(fraud.FraudType ?? "Unclassified")
-                            </span>
-                        </div>
-                        <!-- Dates added here -->
-                        <div class="d-flex justify-content-between text-muted" style="font-size: 0.75rem;">
-                            <span title="Start Date"><i class="bi bi-calendar-event me-1"></i>@fraud.StartDate.ToString("yyyy-MM-dd")</span>
-                            <span title="Deadline"><i class="bi bi-calendar-check me-1"></i>@fraud.Deadline.ToString("yyyy-MM-dd")</span>
-                        </div>
-                    </div>
-
-                    <!-- Card Body -->
-                    <div class="p-3 shadow-lg">
-                        <!-- Prev State -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <div class="small-label">Prev. Count</div>
-                                <div class="fw-semibold text-dark">@fraud.PreviousNumber</div>
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="category-tile card border-0 shadow-sm h-100" @onclick="() => OpenCategory(g.Key)">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-6">
+                                    @g.Key
+                                </span>
+                                <span class="badge bg-dark-subtle text-dark">@g.Count()</span>
                             </div>
-                            <div class="col-6">
-                                <div class="small-label">Prev. Amount</div>
-                                <div class="fw-semibold text-dark">@fraud.PreviousAmount.ToString("N2")</div>
+                            <div class="small-label mt-3">Total amount</div>
+                            <div class="fs-4 fw-bold text-dark mb-2">
+                                $@g.Sum(f => f.Amount).ToString("N2")
+                            </div>
+                            <div class="text-end mt-2 small text-primary fw-semibold">
+                                View Cases <i class="bi bi-arrow-right"></i>
                             </div>
                         </div>
-
-                        <!-- Current State -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <div class="small-label">Current Count</div>
-                                <div class="fw-semibold text-secondary">@fraud.CurrentNumber</div>
-                            </div>
-                            <div class="col-6">
-                                <div class="small-label">Current Amount</div>
-                                <div class="fw-semibold text-secondary">@fraud.CurrentAmount.ToString("N2")</div>
-                            </div>
-                        </div>
-
-                        <!-- Recovered -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <div class="small-label">Recovered</div>
-                                <div class="fw-semibold text-success">@fraud.RecoveredNumber</div>
-                            </div>
-                            <div class="col-6">
-                                <div class="small-label">Rec. Amount</div>
-                                <div class="fw-semibold text-success">@fraud.RecoveredAmount.ToString("N2")</div>
-                            </div>
-                        </div>
-                        <hr/>
-                        <!-- Outstanding (highlighted) -->
-                        <div class="bg-danger-subtle rounded-3 p-2 row g-2">
-                            <div class="col-6">
-                                <div class="small-label text-danger-emphasis">Outstanding</div>
-                                <div class="fw-bold text-danger fs-5">@fraud.OutstandingNumber</div>
-                            </div>
-                            <div class="col-6">
-                                <div class="small-label text-danger-emphasis">Out. Amount</div>
-                                <div class="fw-bold text-danger fs-5">@fraud.OutstandingAmount.ToString("N2")</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="p-2 border-top bg-light d-flex justify-content-around">
-                        <a href="@($"frauds/edit?id={fraud.Id}")" class="btn btn-sm btn-link text-decoration-none fw-semibold">
-                            <i class="bi bi-pencil-square me-1"></i>Edit
-                        </a>
-                        <a href="@($"frauds/details?id={fraud.Id}")" class="btn btn-sm btn-link text-secondary text-decoration-none fw-semibold">
-                            <i class="bi bi-eye me-1"></i>Details
-                        </a>
-                        <a href="@($"frauds/delete?id={fraud.Id}")" class="btn btn-sm btn-link text-danger text-decoration-none fw-semibold">
-                            <i class="bi bi-trash me-1"></i>Delete
-                        </a>
                     </div>
                 </div>
             }
@@ -255,95 +129,81 @@
 @code {
     private ApplicationDbContext context = default!;
     private List<Fraud>? fraudList;
-
-    // Filter Properties
-    private DateTime? FilterStartDate { get; set; }
-    private DateTime? FilterEndDate { get; set; }
+    private List<string> allCategories = new();
+    private string? FilterCategory { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
+        await LoadCategoriesAsync();
         await LoadFraudsAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        var cats = await context.Fraud
+            .Select(f => f.Category)
+            .Distinct()
+            .ToListAsync();
+
+        allCategories = cats
+            .Select(c => string.IsNullOrWhiteSpace(c) ? "Others" : c)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToList();
     }
 
     private async Task LoadFraudsAsync()
     {
-        var query = context.Fraud.AsQueryable();
+        var q = context.Fraud.AsQueryable();
 
-        // Apply Filters based on StartDate
-        if (FilterStartDate.HasValue)
+        if (!string.IsNullOrEmpty(FilterCategory))
         {
-            query = query.Where(f => f.StartDate >= FilterStartDate.Value.Date);
+            if (FilterCategory == "Others")
+                q = q.Where(f => string.IsNullOrWhiteSpace(f.Category));
+            else
+                q = q.Where(f => f.Category == FilterCategory);
         }
 
-        if (FilterEndDate.HasValue)
-        {
-            // Uses <= and adds a day to capture the full end date if time is involved, 
-            // but since we are filtering by StartDate, it's just StartDate <= FilterEndDate
-            query = query.Where(f => f.StartDate <= FilterEndDate.Value.Date);
-        }
-
-        fraudList = await query.ToListAsync();
+        // Changed to CreatedAt so newest records are fetched first
+        fraudList = await q.OrderByDescending(f => f.CreatedAt).ToListAsync();
     }
 
     private async Task ClearFilter()
     {
-        FilterStartDate = null;
-        FilterEndDate = null;
+        FilterCategory = null;
         await LoadFraudsAsync();
     }
+
+    // Group by the Category field, then order the GROUPS by the newest record inside them
+    private IEnumerable<IGrouping<string, Fraud>> CategoryGroups() =>
+        fraudList!
+            .GroupBy(f => string.IsNullOrWhiteSpace(f.Category) ? "Others" : f.Category)
+            .OrderByDescending(g => g.Max(f => f.CreatedAt)); // Order tiles by newest creation date
+
+    private void OpenCategory(string category) =>
+        NavigationManager.NavigateTo($"/frauds/category/{Uri.EscapeDataString(category)}");
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }
 
 <style>
-    /* Horizontal Scroller */
-    .horizontal-card-scroller {
-        display: flex;
-        flex-direction: row;
-        gap: 1.25rem;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scroll-snap-type: x proximity;
-        -webkit-overflow-scrolling: touch;
+    .category-tile {
+        cursor: pointer;
+        transition: transform .15s ease, box-shadow .15s ease;
     }
 
-    /* Individual case card */
-    .fraud-data-card {
-        flex: 0 0 320px;
-        scroll-snap-align: start;
-        background-color: #ffffff;
-        border-radius: 12px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .fraud-data-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
-    }
+        .category-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,.08) !important;
+        }
 
     .small-label {
-        font-size: 0.72rem;
+        font-size: .72rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: .04em;
         color: #6b7280;
-        margin-bottom: 0.15rem;
-    }
-
-    /* Custom scrollbar */
-    .horizontal-card-scroller::-webkit-scrollbar {
-        height: 8px;
-    }
-    .horizontal-card-scroller::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 10px;
-    }
-    .horizontal-card-scroller::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
-    }
-    .horizontal-card-scroller::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        margin-bottom: .15rem;
     }
 </style>

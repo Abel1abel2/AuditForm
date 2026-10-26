@@ -1,32 +1,42 @@
 ﻿@inherits LayoutComponentBase
-  <AuthorizeView>
-            <Authorized>
-            <div class="page">
-                <div class="sidebar ">
-                    <NavMenu />
-                </div>
+<AuthorizeView>
+    <Authorized>
+        <div class="page">
+            <div class="sidebar">
+                <NavMenu />
+            </div>
 
-                <main>
-                    <div class="top-row px-4 d-flex justify-content-center align-items-center auth-header" >
-
-             <div class="text-muted fw-semibold bg-white border px-4 py-2 rounded-pill shadow-sm d-none d-md-block">
+            <main>
+                <div class="top-row px-4 d-flex align-items-center auth-header position-relative">
+                    <!-- Date centered -->
+                    <div class="position-absolute start-50 translate-middle-x text-muted fw-semibold bg-white border px-4 py-2 rounded-pill shadow-sm d-none d-md-block">
                         <i class="bi bi-calendar3 text-primary me-2"></i>
                         @DateTime.Now.ToString("dddd, MMMM dd, yyyy")
                     </div>
-                    </div>
 
-                    <article class="content px-4">
-                        @Body
-                    </article>
-                </main>
-            </div>
- </Authorized>
-            <NotAuthorized>                
+                    <!-- User info at the end -->
+                    <div class="ms-auto px-3">
+                        <NavLink Style="text-decoration:none; color:#3780fa" href="">
+                            <span class="bi bi-person-fill text-primary" aria-hidden="true"></span> @context.User.Identity?.Name
+                            <span class="badge bg-secondary ms-2" style="font-size: 0.65rem;">
+                                @context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                            </span>
+                        </NavLink>
+                    </div>
+                </div>
+
                 <article class="content px-4">
-                        @Body
+                    @Body
                 </article>
-            </NotAuthorized>
-        </AuthorizeView>
+            </main>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <article class="content px-4">
+            @Body
+        </article>
+    </NotAuthorized>
+</AuthorizeView>
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>

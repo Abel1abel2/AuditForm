@@ -38,15 +38,7 @@
                         </NavLink>
                     </div>
                 }                   
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="">
-                        <span class="bi bi-person-fill-nav-menu text-primary" aria-hidden="true"></span> @context.User.Identity?.Name
-                        <!-- NEW: Show the user's role as a badge -->
-                        <span class="badge bg-secondary ms-2" style="font-size: 0.65rem;">
-                            @context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
-                        </span>
-                    </NavLink>
-                </div>
+               
                 <div class="nav-item px-3">
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken />

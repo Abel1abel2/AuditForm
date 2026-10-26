@@ -1,29 +1,28 @@
 @page "/frauds/details"
-@attribute [Authorize]
+
 @using Microsoft.EntityFrameworkCore
 @using AuditForm.Model
 @using BlazorBootstrap
 @inject IDbContextFactory<AuditForm.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Fraud Case Details</PageTitle>
+<PageTitle>Fraud Details</PageTitle>
 
 <div class="container py-4" style="max-width: 960px;">
 
-    <!-- Header & Actions -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h1 class="fw-bold text-dark mb-1">Case Details</h1>
-            <p class="text-muted mb-0 small">Detailed view of the recorded fraud case.</p>
+            <h1 class="fw-bold text-dark mb-1">Fraud Details</h1>
+            <p class="text-muted mb-0 small">Detailed view of a registered fraud entry.</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="/frauds" class="btn btn-outline-secondary">
+            <a href="@BackUrl" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-2"></i>Back to List
             </a>
             @if (fraud is not null)
             {
-                <a href="@($"/frauds/edit?id={fraud.Id}")" class="btn btn-primary shadow-sm">
-                    <i class="bi bi-pencil-square me-2"></i>Edit Case
+                <a href="@EditUrl" class="btn btn-primary shadow-sm">
+                    <i class="bi bi-pencil-square me-2"></i>Edit
                 </a>
             }
         </div>
@@ -33,22 +32,25 @@
     {
         <div class="d-flex align-items-center gap-2 text-muted p-4">
             <div class="spinner-border spinner-border-sm" role="status"></div>
-            <span>Loading case details...</span>
+            <span>Loading details...</span>
         </div>
     }
     else
     {
         <div class="row g-4">
-            <!-- Left Column: Classification & Period -->
-            <div class="col-lg-5">
+            <div class="col-lg-6">
                 <Card Class="border-0 shadow-sm h-100">
                     <CardHeader Class="bg-primary text-white border-0 py-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-tags fs-5"></i>
-                            <h5 class="mb-0 fw-semibold">Case Information</h5>
+                            <h5 class="mb-0 fw-semibold">Fraud Info</h5>
                         </div>
                     </CardHeader>
                     <CardBody Class="p-4">
+                        <div class="mb-4">
+                            <div class="text-muted small text-uppercase fw-semibold mb-1">Date Occurred</div>
+                            <div class="fs-5 fw-bold text-dark">@fraud.OccurredOn.ToString("yyyy-MM-dd")</div>
+                        </div>
                         <div class="mb-4">
                             <div class="text-muted small text-uppercase fw-semibold mb-1">Category</div>
                             <div class="fs-5 fw-bold text-dark">@(fraud.Category ?? "N/A")</div>
@@ -57,123 +59,38 @@
                             <div class="text-muted small text-uppercase fw-semibold mb-1">Fraud Type</div>
                             <div class="fs-5 fw-bold text-dark">@(fraud.FraudType ?? "N/A")</div>
                         </div>
-                        
                         <hr class="my-4 text-muted opacity-25" />
-                        
-                        <div class="row g-2">
+                        <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <div class="text-muted small text-uppercase fw-semibold mb-1">Start Date</div>
-                                <div class="fw-semibold text-dark">@fraud.StartDate.ToString("yyyy-MM-dd")</div>
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Status</div>
+                                <div class="fw-semibold text-dark">@fraud.Status</div>
                             </div>
                             <div class="col-6">
-                                <div class="text-muted small text-uppercase fw-semibold mb-1">Deadline</div>
-                                <div class="fw-semibold text-dark">@fraud.Deadline.ToString("yyyy-MM-dd")</div>
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Reported By</div>
+                                <div class="fw-semibold text-dark">@(fraud.ReportedBy ?? "—")</div>
                             </div>
                         </div>
+                        @if (!string.IsNullOrWhiteSpace(fraud.Description))
+                        {
+                            <div>
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">Description</div>
+                                <div class="text-dark">@fraud.Description</div>
+                            </div>
+                        }
                     </CardBody>
                 </Card>
             </div>
 
-            <!-- Right Column: Financial Data -->
-            <div class="col-lg-7">
-                <!-- Previous & Current State -->
-                <Card Class="border-0 shadow-sm mb-4">
-                    <CardBody Class="p-4">
-                        <div class="row g-4">
-                            <!-- Previous State -->
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center gap-2 mb-3">
-                                    <i class="bi bi-clock-history text-secondary fs-5"></i>
-                                    <h6 class="fw-bold mb-0 text-secondary">Previous State</h6>
-                                </div>
-                                <div class="bg-light rounded p-3">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted small">Count</span>
-                                        <span class="fw-semibold">@fraud.PreviousNumber</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">Amount</span>
-                                        <span class="fw-semibold">@fraud.PreviousAmount.ToString("N2")</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Current State -->
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center gap-2 mb-3">
-                                    <i class="bi bi-activity text-primary fs-5"></i>
-                                    <h6 class="fw-bold mb-0 text-primary">Current State</h6>
-                                </div>
-                                <div class="bg-primary-subtle rounded p-3">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-primary-emphasis small">Count</span>
-                                        <span class="fw-semibold text-primary-emphasis">@fraud.CurrentNumber</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-primary-emphasis small">Amount</span>
-                                        <span class="fw-semibold text-primary-emphasis">@fraud.CurrentAmount.ToString("N2")</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
-
-                <!-- Recovered State -->
-                <Card Class="border-0 shadow-sm mb-4">
-                    <CardBody Class="p-4">
+            <div class="col-lg-6">
+                <Card Class="border-0 shadow-lg mb-4" Style="border-left: 5px solid #5a8dfb !important;">
+                    <CardBody Class="p-4 d-flex flex-column justify-content-center h-100">
                         <div class="d-flex align-items-center gap-2 mb-3">
-                            <i class="bi bi-arrow-counterclockwise text-success fs-5"></i>
-                            <h6 class="fw-bold mb-0 text-success">Recovered</h6>
+                            <i class="bi bi-cash-stack text-primary fs-4"></i>
+                            <h5 class="fw-bold mb-0 text-primary">Amount</h5>
                         </div>
-                        <div class="bg-success-subtle rounded p-3 row g-2">
-                            <div class="col-6">
-                                <div class="text-success-emphasis small text-uppercase fw-semibold mb-1">Count</div>
-                                <div class="fs-5 fw-bold text-success-emphasis">@fraud.RecoveredNumber</div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-success-emphasis small text-uppercase fw-semibold mb-1">Amount</div>
-                                <div class="fs-5 fw-bold text-success-emphasis">@fraud.RecoveredAmount.ToString("N2")</div>
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
-
-                <!-- Outstanding State (Highlighted) -->
-                <Card Class="border-0 shadow-lg mb-4" Style="border-left: 5px solid #dc3545 !important;">
-                    <CardBody Class="p-4">
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>
-                            <h5 class="fw-bold mb-0 text-danger">Outstanding</h5>
-                        </div>
-                        <div class="bg-danger-subtle rounded p-3 row g-2">
-                            <div class="col-6">
-                                <div class="text-danger-emphasis small text-uppercase fw-semibold mb-1">Count</div>
-                                <div class="fs-3 fw-bold text-danger">@fraud.OutstandingNumber</div>
-                            </div>
-                            <div class="col-6 border-start border-danger-subtle">
-                                <div class="text-danger-emphasis small text-uppercase fw-semibold mb-1">Amount</div>
-                                <div class="fs-3 fw-bold text-danger">@fraud.OutstandingAmount.ToString("N2")</div>
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
-
-                <!-- Write-offs & Provisions (NEW) -->
-                <Card Class="border-0 shadow-sm">
-                    <CardBody Class="p-4">
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <i class="bi bi-shield-exclamation text-warning fs-5"></i>
-                            <h6 class="fw-bold mb-0 text-warning-emphasis">Write-offs & Provisions</h6>
-                        </div>
-                        <div class="bg-warning-subtle rounded p-3 row g-2">
-                            <div class="col-6">
-                                <div class="text-warning-emphasis small text-uppercase fw-semibold mb-1">Amount Written Off</div>
-                                <div class="fs-5 fw-bold text-warning-emphasis">@fraud.WrittenOffAmount.ToString("N2")</div>
-                            </div>
-                            <div class="col-6 border-start border-warning-subtle">
-                                <div class="text-warning-emphasis small text-uppercase fw-semibold mb-1">Provision Held</div>
-                                <div class="fs-5 fw-bold text-warning-emphasis">@fraud.ProvisionAmount.ToString("N2")</div>
+                        <div class="bg-primary-subtle rounded p-4 text-center">
+                            <div class="fs-1 fw-bold text-primary">
+                                $@fraud.Amount.ToString("N2")
                             </div>
                         </div>
                     </CardBody>
@@ -189,14 +106,25 @@
     [SupplyParameterFromQuery]
     private int Id { get; set; }
 
+    [SupplyParameterFromQuery]
+    private string? Category { get; set; }
+
+    // Where "Back to List" goes — category page if we came from there
+    private string BackUrl =>
+        string.IsNullOrEmpty(Category)
+            ? "/frauds"
+            : $"/frauds/category/{Uri.EscapeDataString(Category)}";
+
+    // "Edit" link keeps the category in the URL so Edit can return there too
+    private string EditUrl =>
+        string.IsNullOrEmpty(Category)
+            ? $"/frauds/edit?id={Id}"
+            : $"/frauds/edit?id={Id}&category={Uri.EscapeDataString(Category)}";
+
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
+        await using var context = await DbFactory.CreateDbContextAsync();
         fraud = await context.Fraud.FirstOrDefaultAsync(m => m.Id == Id);
-
-        if (fraud is null)
-        {
-            NavigationManager.NotFound();
-        }
+        if (fraud is null) NavigationManager.NotFound();
     }
 }
