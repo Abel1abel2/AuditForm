@@ -43,7 +43,7 @@
                                 <td class="align-middle">
                                     <div class="d-flex gap-2">
                                         <select @onchange="e => ChangeRole(item.User, e.Value?.ToString())" class="form-select form-select-sm" style="width: 150px;">
-                                            <option value="Audit" selected="@(item.Role == "Audit")">Audit</option>
+                                            <option value="Audit" selected="@(item.Role == "Audit")">Audit Officer</option>
                                             <option value="Admin" selected="@(item.Role == "Admin")">Admin</option>
                                         </select>
                                     </div>

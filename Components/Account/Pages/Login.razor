@@ -93,16 +93,28 @@
         var user = await UserManager.FindByNameAsync(Input.Username);
         if(user is null)
         {
-            errorMessage = $"Error: User Not Registored";
+            errorMessage = $"Error: User Not Registered";
             return;
         }
+        
         var ValidateLdp = await Ldp.ValidateUser(Input.Username, Input.Password);
         if (ValidateLdp)
         {
             await SignInManager.SignInAsync(user, Input.RememberMe);
             Logger.LogInformation("User logged in.");
-            // If ReturnUrl is blank or just "/Account/Login", send them straight home
+            
+            // 1. Get the default target URL (If empty, go to root "/")
             var targetUrl = string.IsNullOrEmpty(ReturnUrl) || ReturnUrl.Contains("Account/") ? "/" : ReturnUrl;
+
+            // 2. Check if the user is an Admin
+            var isAdmin = await UserManager.IsInRoleAsync(user, "Admin");
+
+            // 3. 🚨 FIX: If they are trying to access an /admin page but are NOT an admin, send them to the Dashboard ("/")
+            if (targetUrl.Contains("admin", StringComparison.OrdinalIgnoreCase) && !isAdmin)
+            {
+                targetUrl = "/"; 
+            }
+
             RedirectManager.RedirectTo(targetUrl);
         }
         else

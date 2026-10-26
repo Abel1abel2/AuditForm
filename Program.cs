@@ -80,7 +80,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
     // 1. Seed Roles
-    string[] roleNames = { "Admin", "Audit" };
+    string[] roleNames = { "Admin", "Audit Officer" };
     foreach (var roleName in roleNames)
     {
         if (!await roleManager.RoleExistsAsync(roleName))
