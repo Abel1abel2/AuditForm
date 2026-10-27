@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://go.microsoft.com/fwlink/?LinkID=208121. -->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <_PublishTargetUrl>C:\Users\abel.girma\source\repos\AuditForm\bin\Release\net10.0\publish\</_PublishTargetUrl>
+    <History>True|2026-10-27T13:18:27.3201685Z||;True|2026-10-27T16:15:09.9484251+03:00||;True|2026-10-27T16:11:32.9040250+03:00||;False|2026-10-27T16:10:08.7549990+03:00||;False|2026-10-27T16:10:05.0520438+03:00||;True|2026-10-27T15:49:05.9770487+03:00||;True|2026-10-27T15:40:43.9666682+03:00||;True|2026-10-27T15:30:53.2283708+03:00||;True|2026-10-27T15:29:21.4819993+03:00||;True|2026-10-27T15:22:00.6739798+03:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DefaultConnection">
+      <Value>Server=192.168.6.61\ADIBDBSERVER%3bDatabase=Audit_DB%3bUser ID=sa%3bPassword=Admin%402014%3bTrusted_Connection=False%3bTrustServerCertificate=True%3bMultipleActiveResultSets=true</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+</Project>

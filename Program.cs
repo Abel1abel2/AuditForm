@@ -93,7 +93,7 @@ using (var scope = app.Services.CreateScope())
     var adminUser = await userManager.FindByNameAsync("admin");
     if (adminUser == null)
     {
-        var newAdmin = new ApplicationUser { UserName = "admin" };
+        var newAdmin = new ApplicationUser { UserName = "abel.girma" };
         // Password must meet Identity requirements (e.g., 1 uppercase, 1 number, 6 chars)
         await userManager.CreateAsync(newAdmin, "Admin@123");
         await userManager.AddToRoleAsync(newAdmin, "Admin");
