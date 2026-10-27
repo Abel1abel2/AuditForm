@@ -33,7 +33,7 @@
                         <div class="text-muted small text-uppercase fw-semibold mb-1">Total Amount</div>
                         <div class="fs-3 fw-bold text-dark">
                             <i class="bi text-primary bi-cash-stack fs-4"></i>
-                            $@fraudList.Sum(f => f.Amount).ToString("N2")
+                            @fraudList.Sum(f => f.Amount).ToString("N2")
                         </div>
                     </CardBody>
                 </Card>
@@ -113,7 +113,7 @@
                             </div>
                             <div class="small-label mt-3">Total amount</div>
                             <div class="fs-4 fw-bold text-dark mb-2">
-                                $@g.Sum(f => f.Amount).ToString("N2")
+                                @g.Sum(f => f.Amount).ToString("N2")
                             </div>
                             <div class="text-end mt-2 small text-primary fw-semibold">
                                 View Cases <i class="bi bi-arrow-right"></i>
